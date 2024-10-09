@@ -1,20 +1,9 @@
 name: Push Artifact to JFrog
 
 on:
-  workflow_call: # This enables the workflow to be called from other workflows
-    inputs:
-      dotnet_version:
-        required: true
-        type: string
-      jfrog_url:
-        required: true
-        type: string
-      jfrog_username:
-        required: true
-        type: string
-      jfrog_api_key:
-        required: true
-        type: string
+  push:
+    branches:
+      - main
 jobs:
   build:
     runs-on: ubuntu-latest
