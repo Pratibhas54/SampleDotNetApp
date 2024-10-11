@@ -1,9 +1,21 @@
 name: Push Artifact to JFrog
 
 on:
-  push:
-    branches:
-      - main
+  workflow_call:
+    inputs:
+      dotnet_version:
+        description: '.NET SDK version to use'
+        required: true
+        type: string
+      csproj_file:
+        description: 'The path to the .csproj file'
+        required: true
+        type: string
+      jfrog_artifact_path:
+        description: 'The path where the artifact should be uploaded in JFrog'
+        required: true
+        type: string
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -13,11 +25,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # Step 2: Setup .NET SDK
+      # Step 2: Setup .NET SDK with version from input
       - name: Setup .NET
         uses: actions/setup-dotnet@v3
         with:
-          dotnet-version: '8.0.x'
+          dotnet-version: ${{ inputs.dotnet_version }}
           
       - name: Install JFrog CLI
         run: |
@@ -29,12 +41,12 @@ jobs:
       - name: Restore dependencies
         run: dotnet restore
 
-      # Step 4: Get and update the build version
+      # Step 4: Get and update the build version using the .csproj file from input
       - name: Set build version
         id: versioning
         run: |
           # Extract version from the .csproj file
-          current_version=$(grep -oPm1 "(?<=<Version>)[^<]+" ./SampleDotNetApp.csproj)
+          current_version=$(grep -oPm1 "(?<=<Version>)[^<]+" ${{ inputs.csproj_file }})
           echo "Current version: $current_version"
 
           # Extract major and minor version
@@ -65,10 +77,10 @@ jobs:
                         --user ${{ secrets.JFROG_USERNAME }} \
                         --apikey ${{ secrets.JFROG_API_KEY }}  
 
-      # Step 7: Upload the artifact to JFrog Artifactory
+      # Step 7: Upload the artifact to JFrog Artifactory with dynamic path
       - name: Upload .NET artifact to JFrog Artifactory
         run: |
-          jfrog rt u "output/*" "test/SampleDotNetApp/${{ env.VERSION }}/" --build-name=dotnet-build --build-number=${{ github.run_id }}
+          jfrog rt u "output/*" "${{ inputs.jfrog_artifact_path }}/${{ env.VERSION }}/" --build-name=dotnet-build --build-number=${{ github.run_id }}
         env:
           JFROG_URL: ${{ secrets.JFROG_URL }}
           JFROG_USERNAME: ${{ secrets.JFROG_USERNAME }}
