@@ -15,19 +15,7 @@ on:
         description: 'The path where the artifact should be uploaded in JFrog'
         required: true
         type: string
-      jfrog_url:           # Declare the JFrog URL as an input
-        description: 'JFrog URL'
-        required: true
-        type: string
-      jfrog_username:      # Declare the JFrog username as an input
-        description: 'JFrog Username'
-        required: true
-        type: string
-      jfrog_api_key:       # Declare the JFrog API key as an input
-        description: 'JFrog API Key'
-        required: true
-        type: string
-
+      
 jobs:
   build:
     runs-on: ubuntu-latest
